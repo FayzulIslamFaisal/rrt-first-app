@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import { removeCartItem } from "../redux/features/cart/cartSlice";
+import {
+  incrementQuantity,
+  removeCartItem,
+  decrementQuantity,
+} from "../redux/features/cart/cartSlice";
 
 const CartPage = () => {
   const cartItemFromStore = useSelector((state) => state.cart.cartProducts); // Data from Redux store
@@ -64,6 +68,61 @@ const CartPage = () => {
     }
   };
 
+  const handleIncrement = (productId) => {
+    if (productId) {
+      dispatch(incrementQuantity(productId));
+      const localStorageCart = localStorage.getItem("cart-products");
+      if (localStorageCart) {
+        const cartItems = JSON.parse(localStorageCart);
+        const updatedCart = cartItems.map((item) => {
+          if (item.id === productId) {
+            item.quantity += 1;
+            item.totalPrice = item.price * item.quantity;
+          }
+          return item;
+        });
+
+        localStorage.setItem("cart-products", JSON.stringify(updatedCart));
+        setCartItem(updatedCart);
+      }
+
+      toast.success("Quantity incremented successfully!");
+    } else {
+      toast.error("Failed to increment quantity. Please try again.");
+    }
+  };
+
+  const handleDecrement = (productId) => {
+    if (productId) {
+      // Decrement quantity in Redux store
+      dispatch(decrementQuantity(productId));
+
+      // Decrement quantity in localStorage
+      const localStorageCart = localStorage.getItem("cart-products");
+      if (localStorageCart) {
+        const cartItems = JSON.parse(localStorageCart);
+        const updatedCart = cartItems
+          .map((item) => {
+            if (item.id === productId) {
+              if (item.quantity > 1) {
+                item.quantity -= 1; // Decrease quantity by 1
+                item.totalPrice = item.price * item.quantity; // Update total price
+              }
+            }
+            return item;
+          })
+          .filter((item) => item.quantity > 0); // Remove items with quantity <= 0
+
+        localStorage.setItem("cart-products", JSON.stringify(updatedCart));
+        setCartItem(updatedCart); // Update state for immediate UI update
+      }
+
+      toast.success("Quantity decremented successfully!");
+    } else {
+      toast.error("Failed to decrement quantity. Please try again.");
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex  gap-4">
@@ -104,7 +163,10 @@ const CartPage = () => {
                           </button>
                           <span> {item.quantity}</span>
                           {/* <input type="number" value="1" /> */}
-                          <button className="bg-green-500 text-white px-2 py-1">
+                          <button
+                            onClick={() => handleIncrement(item.id)}
+                            className="bg-green-500 text-white px-2 py-1"
+                          >
                             +
                           </button>
                         </div>
