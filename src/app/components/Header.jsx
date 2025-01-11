@@ -1,8 +1,14 @@
+"use client";
 import Link from "next/link";
 import { FaSearch } from "react-icons/fa";
 import { FaCartPlus } from "react-icons/fa6";
+import { useSelector } from "react-redux";
 
 const Header = () => {
+  const cart = useSelector((state) => state.cart.cartProducts);
+
+  const quantityCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+
   return (
     <>
       <div className=" bg-stone-500 px-4 py-2">
@@ -32,9 +38,22 @@ const Header = () => {
           <nav>
             <ul className="flex gap-3 items-center text-white">
               <li>
-                <Link href="#">
-                  <FaCartPlus />
-                </Link>
+                {quantityCount > 0 ? (
+                  <Link href="/cart">
+                    <span className="relative">
+                      <FaCartPlus />
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white px-1 py-1 rounded-full">
+                        {quantityCount}
+                      </span>
+                    </span>
+                  </Link>
+                ) : (
+                  <Link href="/cart">
+                    <span>
+                      <FaCartPlus />
+                    </span>
+                  </Link>
+                )}
               </li>
               <li>
                 <Link href="/Login">Login</Link>
