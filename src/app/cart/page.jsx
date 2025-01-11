@@ -2,12 +2,16 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { RiDeleteBinLine } from "react-icons/ri";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { toast } from "react-toastify";
+import { removeCartItem } from "../redux/features/cart/cartSlice";
+
 const CartPage = () => {
   const cartItemFromStore = useSelector((state) => state.cart.cartProducts); // Data from Redux store
   const [cartItem, setCartItem] = useState([]);
   const [address, setAddress] = useState("Kallyanpur, Dhaka , Bangladesh");
   const [changeAddress, setChangeAddress] = useState("");
+  const dispatch = useDispatch();
 
   const handleInputChange = (e) => {
     setChangeAddress(e.target.value);
@@ -39,6 +43,26 @@ const CartPage = () => {
   const totalPrice = cartItem.reduce((total, item) => {
     return total + item.price * item.quantity;
   }, 0);
+
+  const handleRemoveCartItem = (productId) => {
+    if (productId) {
+      // Remove item from Redux store
+      dispatch(removeCartItem(productId));
+
+      // Remove item from localStorage
+      const localStorageCart = localStorage.getItem("cart-products");
+      if (localStorageCart) {
+        const cartItems = JSON.parse(localStorageCart);
+        const updatedCart = cartItems.filter((item) => item.id !== productId);
+        localStorage.setItem("cart-products", JSON.stringify(updatedCart));
+        setCartItem(updatedCart);
+      }
+
+      toast.success("Item removed from cart successfully!");
+    } else {
+      toast.error("Failed to remove item. Please try again.");
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -88,7 +112,10 @@ const CartPage = () => {
 
                       <td className="text-center py-2">{item.price}</td>
                       <td className="text-center py-2">
-                        <button title="Remove">
+                        <button
+                          title="Remove"
+                          onClick={() => handleRemoveCartItem(item.id)}
+                        >
                           <RiDeleteBinLine className=" text-red-600" />
                         </button>
                       </td>
