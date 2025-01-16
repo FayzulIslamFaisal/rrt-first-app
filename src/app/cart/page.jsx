@@ -9,6 +9,7 @@ import {
   removeCartItem,
   decrementQuantity,
 } from "../redux/features/cart/cartSlice";
+import { useRouter } from "next/navigation";
 
 const CartPage = () => {
   const cartItemFromStore = useSelector((state) => state.cart.cartProducts); // Data from Redux store
@@ -16,6 +17,8 @@ const CartPage = () => {
   const [address, setAddress] = useState("Kallyanpur, Dhaka , Bangladesh");
   const [changeAddress, setChangeAddress] = useState("");
   const dispatch = useDispatch();
+
+  const router = useRouter();
 
   const handleInputChange = (e) => {
     setChangeAddress(e.target.value);
@@ -158,7 +161,15 @@ const CartPage = () => {
                       </td>
                       <td>
                         <div className=" flex items-center gap-2 justify-center">
-                          <button className="bg-red-500 text-white px-2 py-1">
+                          <button
+                            onClick={() => handleDecrement(item.id)}
+                            className={`bg-red-500 text-white px-2 py-1 ${
+                              item.quantity === 1
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }`}
+                            disabled={item.quantity === 1}
+                          >
                             -
                           </button>
                           <span> {item.quantity}</span>
@@ -233,7 +244,10 @@ const CartPage = () => {
                 <span>Total Price</span>
                 <span>$ {totalPrice.toFixed(2)}</span>
               </strong>
-              <button className=" w-full px-4 py-2 bg-red-500 text-white">
+              <button
+                onClick={() => router.push("/checkout")}
+                className=" w-full px-4 py-2 bg-red-500 text-white"
+              >
                 Procced To Checkout
               </button>
             </div>
